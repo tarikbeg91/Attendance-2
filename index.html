@@ -256,11 +256,11 @@
               margin-bottom: 0;
           }
 
-           /* New container for quick controls */
+           /* New container to hold quick controls in a row */
           #userQuickControls {
               display: flex; /* Arrange children (the 4 control divs) in a row */
               flex-wrap: wrap; /* Allow wrapping on smaller screens */
-              gap: 10px; /* Space between these control groups */
+              gap: 8px; /* Space between these control groups - Adjusted gap */
               align-items: center;
               width: 100%; /* Take full width */
               margin-bottom: 15px; /* Add some space below this row */
@@ -272,8 +272,8 @@
                gap: 5px; /* Gap between (hidden) label and input/select */
                margin-bottom: 0; /* Remove default bottom margin when in flex row */
                flex-grow: 1; /* Allow items to grow and fill space */
-               flex-basis: 150px; /* Suggest a starting width, allows shrinking */
-               min-width: 120px; /* Ensure they don't get too small */
+               flex-basis: 120px; /* Suggest a starting width, allows shrinking */
+               min-width: 100px; /* Ensure they don't get too small - Adjusted min-width */
            }
            /* Hide labels within the quick controls */
            #userQuickControls label {
@@ -286,6 +286,9 @@
                min-width: 0; /* Allow shrinking */
                margin: 0; /* Remove margin */
                /* Remove specific width styles from HTML */
+               font-size: 13px; /* Reduced font size */
+               padding: 4px 6px; /* Reduced padding */
+               height: calc(1em + 8px); /* Adjusted height based on new padding (4px top+bottom) */
            }
 
 
@@ -534,23 +537,23 @@
         <div id="userQuickControls">
              <div id="rateContainer">
                  <label for="userRate" data-translate-key="rateLabel">Rate (Per Attendance):</label>
-                 <input type="number" id="userRate" min="0" data-translate-key-placeholder="rateLabel" placeholder="Rate">
+                 <input type="number" id="userRate" min="0" data-translate-key-placeholder="ratePlaceholderShort" placeholder="Rate">
              </div>
 
              <div id="overtimeRateContainer">
                  <label for="userOvertimeRate" data-translate-key="overtimeRateLabel">Overtime Hours per Attendance Rate:</label>
-                 <input type="number" id="userOvertimeRate" min="1" step="0.5" data-translate-key-placeholder="otRatePlaceholder" placeholder="OT Rate">
+                 <input type="number" id="userOvertimeRate" min="1" step="0.5" data-translate-key-placeholder="otRatePlaceholderShort" placeholder="OT Rate">
              </div>
 
               <div id="manualBalanceContainer">
                  <label for="manualCarriedOverBalance" data-translate-key="manualBalanceLabel">Carried Over Balance:</label>
-                 <input type="number" id="manualCarriedOverBalance" data-translate-key-placeholder="manualBalancePlaceholder" placeholder="Previous Balance">
+                 <input type="number" id="manualCarriedOverBalance" data-translate-key-placeholder="balancePlaceholderShort" placeholder="Previous Balance">
               </div>
 
               <div id="includeBalanceContainer">
                   <label for="otherUserForReport" data-translate-key="includeBalanceOf">Include Balance of:</label>
                   <select id="otherUserForReport" onchange="showSummary(activeReportType)">
-                      <option value="" selected disabled hidden data-translate-key="selectUserPlaceholder">-- Select User --</option>
+                      <option value="" selected disabled hidden data-translate-key="selectUserPlaceholderShort">-- User --</option>
                       </select>
               </div>
          </div>
@@ -672,7 +675,13 @@
                  // New translation for Overtime Rate label and placeholders
                  overtimeRateLabel: "Overtime Hours per Attendance Rate:",
                  otRatePlaceholder: "OT Rate", // Placeholder for Overtime Rate input
-                 selectUserPlaceholder: "-- Select User --" // Placeholder for Include Balance select
+                 selectUserPlaceholder: "-- Select User --", // Placeholder for Include Balance select
+
+                 // New shorter placeholders for compact layout
+                 ratePlaceholderShort: "Rate",
+                 otRatePlaceholderShort: "OT",
+                 balancePlaceholderShort: "Bal",
+                 selectUserPlaceholderShort: "-- User --"
             },
              'hi': {
                 appTitle: "हाज़िरी ट्रैकर", hideShowNames: "नाम छिपाएँ/दिखाएँ", dataManagement: "डेटा प्रबंधन",
@@ -746,7 +755,13 @@
                  // New translation for Overtime Rate label and placeholders
                  overtimeRateLabel: "ओवरटाइम घंटे प्रति हाज़िरी दर:",
                  otRatePlaceholder: "ओटी दर", // Placeholder for Overtime Rate input
-                 selectUserPlaceholder: "-- यूज़र चुनें --" // Placeholder for Include Balance select
+                 selectUserPlaceholder: "-- यूज़र चुनें --", // Placeholder for Include Balance select
+
+                 // New shorter placeholders for compact layout
+                 ratePlaceholderShort: "दर",
+                 otRatePlaceholderShort: "ओटी",
+                 balancePlaceholderShort: "बैलेंस",
+                 selectUserPlaceholderShort: "-- यूज़र --"
             }
         };
         let currentLanguage = localStorage.getItem('appLanguage') || 'hi';
@@ -841,7 +856,7 @@
 
                  // Translate the placeholder option for the select
                  const selectPlaceholderOption = document.querySelector('#otherUserForReport option[disabled][hidden]');
-                 if(selectPlaceholderOption) selectPlaceholderOption.textContent = translate('selectUserPlaceholder');
+                 if(selectPlaceholderOption) selectPlaceholderOption.textContent = translate('selectUserPlaceholderShort');
 
 
                  // Translate modal title
@@ -1197,7 +1212,7 @@
 
              // Reset the select value if the currently selected other user was the main user, or is no longer in the list
             const currentSelectedOtherUser = selectElement.value;
-             if (currentSelectedOtherUser === currentUser || !activeUserNames.includes(currentSelectedOtherUser)) {
+             if (currentSelectedOtherUser === currentUser || (currentSelectedOtherUser !== '' && !activeUserNames.includes(currentSelectedOtherUser))) {
                  selectElement.value = ""; // Reset to the placeholder option
              }
 
@@ -2464,7 +2479,7 @@
             if(footerDiv){
                 const now = new Date();
                 const formatter = new Intl.DateTimeFormat(currentLanguage==='hi'?'hi-IN-u-nu-latn':'en-GB', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-                const reportPeriodKey = activeReportType==='firstHalfCurrent'?'reportPeriodFirstHalf':activeReportType==='afterFifteenth'?'reportPeriodPeriodAfter15th':'reportPeriodFullMonth'; // Fixed typo here - was PeriodAfter15th, should be After15th
+                const reportPeriodKey = activeReportType==='firstHalfCurrent'?'reportPeriodFirstHalf':activeReportType==='afterFifteenth'?'reportPeriodAfter15th':'reportPeriodFullMonth'; // Fixed typo here - was PeriodAfter15th, should be After15th
 
                 let otherUserBalanceString = "";
                 let finalBalanceToDisplay = finalBalanceForReport; // Default to current user's balance
@@ -2722,7 +2737,7 @@
                  const exportObj = {
                      attendanceData: data,
                      exportDate: new Date().toISOString(),
-                     appVersion: "1.3.3", // Increment app version after fixing dark mode buttons and quick controls layout
+                     appVersion: "1.3.4", // Increment app version after fixing quick controls layout
                      language: currentLanguage,
                      darkMode: localStorage.getItem('darkMode'),
                      showArchivedUsers: showArchivedUsers // Include archived state in export
